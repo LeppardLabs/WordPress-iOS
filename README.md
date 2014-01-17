@@ -1,4 +1,6 @@
-# WordPress for iOS #
+### WordPress App Challenge for iOS
+
+*This is the LeppardLabs programming challenge repository.*
 
 [![BuddyBuild](https://dashboard.buddybuild.com/api/statusImage?appID=57a120bbe0f5520100e11c19&branch=develop&build=latest)](https://dashboard.buddybuild.com/apps/57a120bbe0f5520100e11c19/build/latest)
 
