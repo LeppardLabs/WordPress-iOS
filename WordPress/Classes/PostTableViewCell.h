@@ -25,7 +25,7 @@
 
 @interface PostTableViewCell : UITableViewCell {
     AbstractPost *__weak post;
-
+    
     UILabel *nameLabel;
     UILabel *dateLabel;
 	UILabel *statusLabel;
