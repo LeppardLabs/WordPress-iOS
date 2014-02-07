@@ -94,8 +94,8 @@ CGFloat const NewPostTableViewCellThumbnailOffset = 50.0;
                                    _titleLabel.frame.size.height + _dateLabel.frame.size.height);
     CGFloat totalHeightOfCellWithLabels = totalHeightOfLabels +
                                         (self.frame.size.height - totalHeightOfLabels);
-    CGFloat horizontalCenterOfCell = totalHeightOfCellWithLabels / 2;
-    CGFloat yCoordOfThumbnail = horizontalCenterOfCell - (45.0 / 2);
+    CGFloat verticalHeight = totalHeightOfCellWithLabels / 2;
+    CGFloat yCoordOfThumbnail = verticalHeight - (45.0 / 2);
     
     _imgView.frame = CGRectMake(NewPostTableViewCellStandardOffset,
                                 yCoordOfThumbnail, 45.0, 45.0);
@@ -222,8 +222,6 @@ CGFloat const NewPostTableViewCellThumbnailOffset = 50.0;
 
 + (NSString *)titleText:(AbstractPost *)post
 {
-    NSLog(@"POST Contentents: %@", [post description]);
-    
     NSString *title = [[post valueForKey:@"postTitle"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     if (title == nil || ([title length] == 0)) {
         title = NSLocalizedString(@"(no title)", @"");
@@ -294,7 +292,7 @@ CGFloat const NewPostTableViewCellThumbnailOffset = 50.0;
         if (IS_IOS7 && IS_RETINA) {
             return CGRectMake(NewPostTableViewCellStandardOffset + NewPostTableViewCellLabelAndTitleHorizontalOffset + NewPostTableViewCellThumbnailOffset, NewPostTableViewCellStandardOffset, size.width, size.height);
         } else {
-            return CGRectMake(NewPostTableViewCellStandardOffset, NewPostTableViewCellStandardOffset, size.width, size.height);
+            return CGRectMake(NewPostTableViewCellStandardOffset + NewPostTableViewCellThumbnailOffset, NewPostTableViewCellStandardOffset, size.width, size.height);
         }
     } else {
         return CGRectMake(0, NewPostTableViewCellStandardOffset, 0, 0);
@@ -318,7 +316,7 @@ CGFloat const NewPostTableViewCellThumbnailOffset = 50.0;
     if (IS_IOS7 && IS_RETINA) {
         return CGRectMake(NewPostTableViewCellStandardOffset + NewPostTableViewCellLabelAndTitleHorizontalOffset + NewPostTableViewCellThumbnailOffset, CGRectGetMaxY(previousFrame) + offset, size.width, size.height);
     } else {
-        return CGRectIntegral(CGRectMake(NewPostTableViewCellStandardOffset, CGRectGetMaxY(previousFrame) + offset, size.width, size.height));
+        return CGRectIntegral(CGRectMake(NewPostTableViewCellStandardOffset + NewPostTableViewCellThumbnailOffset, CGRectGetMaxY(previousFrame) + offset, size.width, size.height));
     }
 }
 
