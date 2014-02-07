@@ -109,6 +109,8 @@ static const float statusLabelMaxWidthPortrait = 100.f;
     @catch (NSException * e) {
         saving = NO;
     }
+    
+
 }
 
 - (void)layoutSubviews {

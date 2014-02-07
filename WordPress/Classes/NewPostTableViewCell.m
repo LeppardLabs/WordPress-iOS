@@ -13,6 +13,8 @@
 
 @interface NewPostTableViewCell() {
     AbstractPost __weak *_post;
+    
+    UIImageView *_imgView;
     UILabel *_statusLabel;
     UILabel *_titleLabel;
     UILabel *_dateLabel;
@@ -26,12 +28,16 @@ CGFloat const NewPostTableViewCellStandardOffset = 16.0;
 CGFloat const NewPostTableViewCellTitleAndDateVerticalOffset = 6.0;
 CGFloat const NewPostTableViewCellLabelAndTitleHorizontalOffset = -0.5;
 CGFloat const NewPostTableViewCellAccessoryViewOffset = 25.0;
+CGFloat const NewPostTableViewCellThumbnailOffset = 50.0;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
         self.backgroundColor = [WPStyleGuide itsEverywhereGrey];
+        
+        _imgView = [[UIImageView alloc]initWithFrame:CGRectMake(0.0, 0.0, 45.0, 45.0)];
+        [self.contentView addSubview:_imgView];
         
         _statusLabel = [[UILabel alloc] init];
         _statusLabel.backgroundColor = [UIColor clearColor];
@@ -62,6 +68,7 @@ CGFloat const NewPostTableViewCellAccessoryViewOffset = 25.0;
         _dateLabel.shadowOffset = CGSizeMake(0.0, 0.0);
         _dateLabel.textColor = [WPStyleGuide allTAllShadeGrey];
         [self.contentView addSubview:_dateLabel];
+        
     }
     return self;
 }
@@ -82,6 +89,16 @@ CGFloat const NewPostTableViewCellAccessoryViewOffset = 25.0;
     _statusLabel.frame = [[self class] statusLabelFrameForPost:self.post maxWidth:maxWidth];
     _titleLabel.frame = [[self class] titleLabelFrameForPost:self.post previousFrame:_statusLabel.frame maxWidth:maxWidth];
     _dateLabel.frame = [[self class] dateLabelFrameForPost:self.post previousFrame:_titleLabel.frame maxWidth:maxWidth];
+    
+    CGFloat totalHeightOfLabels = (_statusLabel.frame.size.height +
+                                   _titleLabel.frame.size.height + _dateLabel.frame.size.height);
+    CGFloat totalHeightOfCellWithLabels = totalHeightOfLabels +
+                                        (self.frame.size.height - totalHeightOfLabels);
+    CGFloat verticalHeight = totalHeightOfCellWithLabels / 2;
+    CGFloat yCoordOfThumbnail = verticalHeight - (45.0 / 2);
+    
+    _imgView.frame = CGRectMake(NewPostTableViewCellStandardOffset,
+                                yCoordOfThumbnail, 45.0, 45.0);
 }
 
 + (CGFloat)rowHeightForPost:(AbstractPost *)post andWidth:(CGFloat)width;
@@ -105,6 +122,11 @@ CGFloat const NewPostTableViewCellAccessoryViewOffset = 25.0;
 - (void)setPost:(AbstractPost *)post
 {
     _post = post;
+    
+    NSString *contents = [[self class] postContents:post];
+    NSString *imgSource = [self parseImageSrcFromHTML:contents];
+    [_imgView setImageWithURL:[NSURL URLWithString:imgSource]
+             placeholderImage:[UIImage imageNamed:@"AppIcon29x29.png"]];
     
     _titleLabel.text = [[self class] titleText:post];
     _statusLabel.text = [[self class] statusTextForPost:post];
@@ -230,12 +252,31 @@ CGFloat const NewPostTableViewCellAccessoryViewOffset = 25.0;
     return [dateFormatter stringFromDate:date];
 }
 
++ (NSString *)postContents:(AbstractPost *)post
+{
+    NSString *contentsOfPost = [post valueForKey:@"content"];
+    
+    return contentsOfPost;
+}
+
+- (NSString *)parseImageSrcFromHTML:(NSString *)html {
+	NSError *error;
+	NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"src=\"\\S+\"" options:NSRegularExpressionCaseInsensitive error:&error];
+	NSRange rng = [regex rangeOfFirstMatchInString:html options:NSRegularExpressionCaseInsensitive range:NSMakeRange(0, [html length])];
+	
+	if (NSNotFound != rng.location) {
+		rng = NSMakeRange(rng.location+5, rng.length-6);
+		return [html substringWithRange:rng];
+	}
+	return nil;
+}
+
 
 #pragma mark - Private Methods
 
 + (CGFloat)textWidth:(CGFloat)maxWidth
 {
-    return maxWidth - NewPostTableViewCellStandardOffset - NewPostTableViewCellAccessoryViewOffset;
+    return maxWidth - NewPostTableViewCellStandardOffset - NewPostTableViewCellAccessoryViewOffset - NewPostTableViewCellThumbnailOffset;
 }
 
 + (CGRect)statusLabelFrameForPost:(AbstractPost *)post maxWidth:(CGFloat)maxWidth
@@ -249,9 +290,9 @@ CGFloat const NewPostTableViewCellAccessoryViewOffset = 25.0;
             size = [statusText sizeWithFont:[self statusFont] constrainedToSize:CGSizeMake([[self class] textWidth:maxWidth], CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping];
         }
         if (IS_IOS7 && IS_RETINA) {
-            return CGRectMake(NewPostTableViewCellStandardOffset + NewPostTableViewCellLabelAndTitleHorizontalOffset, NewPostTableViewCellStandardOffset, size.width, size.height);
+            return CGRectMake(NewPostTableViewCellStandardOffset + NewPostTableViewCellLabelAndTitleHorizontalOffset + NewPostTableViewCellThumbnailOffset, NewPostTableViewCellStandardOffset, size.width, size.height);
         } else {
-            return CGRectMake(NewPostTableViewCellStandardOffset, NewPostTableViewCellStandardOffset, size.width, size.height);
+            return CGRectMake(NewPostTableViewCellStandardOffset + NewPostTableViewCellThumbnailOffset, NewPostTableViewCellStandardOffset, size.width, size.height);
         }
     } else {
         return CGRectMake(0, NewPostTableViewCellStandardOffset, 0, 0);
@@ -273,9 +314,9 @@ CGFloat const NewPostTableViewCellAccessoryViewOffset = 25.0;
     }
 
     if (IS_IOS7 && IS_RETINA) {
-        return CGRectMake(NewPostTableViewCellStandardOffset + NewPostTableViewCellLabelAndTitleHorizontalOffset, CGRectGetMaxY(previousFrame) + offset, size.width, size.height);
+        return CGRectMake(NewPostTableViewCellStandardOffset + NewPostTableViewCellLabelAndTitleHorizontalOffset + NewPostTableViewCellThumbnailOffset, CGRectGetMaxY(previousFrame) + offset, size.width, size.height);
     } else {
-        return CGRectIntegral(CGRectMake(NewPostTableViewCellStandardOffset, CGRectGetMaxY(previousFrame) + offset, size.width, size.height));
+        return CGRectIntegral(CGRectMake(NewPostTableViewCellStandardOffset + NewPostTableViewCellThumbnailOffset, CGRectGetMaxY(previousFrame) + offset, size.width, size.height));
     }
 }
 
@@ -294,7 +335,8 @@ CGFloat const NewPostTableViewCellAccessoryViewOffset = 25.0;
         offset = NewPostTableViewCellTitleAndDateVerticalOffset;
     }
 
-    return CGRectIntegral(CGRectMake(NewPostTableViewCellStandardOffset, CGRectGetMaxY(previousFrame) + offset, size.width, size.height));
+    return CGRectIntegral(CGRectMake(NewPostTableViewCellStandardOffset + NewPostTableViewCellThumbnailOffset, CGRectGetMaxY(previousFrame) + offset, size.width, size.height));
 }
+
 
 @end
